@@ -15,8 +15,8 @@ const TYPE = "type"
 // var declaration
 var (
   integer int32 = 12
-  letters []rune = []rune{'L','e','t','r','a','s','ç','ñ'}
-  bytes []byte = []byte{'ñ','o','r','a'}
+  letter []rune = []rune{'ñ'}
+  bytes []byte = []byte{'ß'}
 )
 
 func main() {
@@ -31,7 +31,7 @@ func main() {
   fmt.Printf("%#v\n", TYPE)
 
   fmt.Printf("%#v\n", integer)
-  fmt.Printf("%#v\n", letters)
+  fmt.Printf("%#v\n", letter)
   fmt.Printf("%#v\n", bytes)
 
   fmt.Printf("%#v\n", hello)
