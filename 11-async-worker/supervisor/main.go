@@ -1,32 +1,50 @@
 package supervisor
 
-import "../message"
+import "sync"
 
-type Worker struct {
-  work func (message.Message, *Worker)
+type Message struct {
+  command string
+  aggregate int
 }
 
+func NewMessageCollection(names map[string]int) []Message {
+  msgs := []Message{}
+  for cmd, aid := range names {
+    msgs = append(msgs, Message{command: cmd, aggregate: aid})
+  }
+  return msgs
+}
+
+type Worker func (Message)
+
 type Supervisor struct {
-  workers []*Worker
+  workers []Worker
+  wg sync.WaitGroup
 }
 
 type ISupervisor interface {
-  CreateWorker(func (message.Message, *Worker))
-  Handle(message.Message)
+  CreateWorker(func (Message))
+  Handle(Message)
 }
 
-func New() Supervisor {
-  return Supervisor{workers: []*Worker{}}
+func New() *Supervisor {
+  return &Supervisor{workers: []Worker{}}
 }
 
-func (s *Supervisor) CreateWorker(work func (message.Message, *Worker)) {
-  s.workers = append(s.workers, &Worker{
-    work: work,
-  })
+func (s *Supervisor) CreateWorker(worker func (Message)) {
+  s.workers = append(s.workers, worker)
 }
 
-func (s *Supervisor) Handle(msg message.Message) {
+func (s *Supervisor) Wait() {
+  s.wg.Wait()
+}
+
+func (s *Supervisor) Handle(msg Message) {
+  s.wg.Add(1)
   for _, worker := range s.workers {
-    go worker.work(msg, worker)
+    go func() {
+      defer s.wg.Done()
+      worker(msg)
+    }()
   }
 }
